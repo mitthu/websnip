@@ -189,7 +189,7 @@ class WebResource(object):
 
 		self.filebase, self.extension = self.getFilenameAndExtension()
 		if self.hash:
-			self.filebase = self.filebase + '-' + self.hash[:8] # First 7 characters of md5()
+			self.filebase = self.filebase + '-' + self.hash[:8] # First 7 characters of md5 hash
 		self.filename = self.filebase + self.extension
 
 		self.soup = None
