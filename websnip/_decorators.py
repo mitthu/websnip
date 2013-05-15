@@ -2,7 +2,7 @@ def updated_references(f):
 	def inner(*args, **kwargs):
 		instance = args[0]
 		if not instance.updated_references:
-			instance.updateReferences()
+			instance.update_node_references()
 		return f(*args, **kwargs)
 	return inner
 

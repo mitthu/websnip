@@ -7,6 +7,7 @@
 # - Make resources handled as unicode.
 # - Write images as binary files.
 # - Use python logging feature.
+# - Take care or links starting with '#'
 
 # BUGs:
 # Caching w3school pages gives error (@ top),
@@ -22,13 +23,13 @@ from urlparse import urlparse, urljoin
 from os.path import splitext, basename
 import mimetypes
 import codecs
+import re
 
 from _log import Log
 from _decorators import *
 
 mimetypes.init()
 links = {}
-links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp'
 links['w3_1'] = 'http://www.w3schools.com/tags/att_script_src.asp'
 links['auto-complete'] = 'http://www2-pcmdi.llnl.gov/cdat/tips_and_tricks/python_tips/autocompletion.html'
 links['doc-urllib'] = 'http://docs.python.org/2/howto/urllib2.html'
@@ -36,8 +37,10 @@ links['buggenie-issue'] = 'http://issues.thebuggenie.com/wiki/TheBugGenie%3AHowT
 links['python-signal'] = 'http://docs.python.org/2/library/signal.html'
 
 # Error prone
-links['python'] = 'http://python.org/'
-links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar'
+links['python'] = 'http://python.org/' # No styles come up, @import style directive
+links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar' # Serialize problem
+links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-python-packaging-a-k-a-setup-scripts/' # CSS background image
+links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
 
 url = links['django-debug']
 
@@ -101,12 +104,31 @@ class WebResource(object):
 			return False
 		return bool(urlparse(url).scheme)
 
+	@deprecated
 	@parsed
 	def updateNodeReferences(self, node, ref):
 		for link in self.soup.find_all(node):
 			link_attr = link.get(ref)
 			if not self._is_absolute(link_attr):
 				link.attrs[ref] = urljoin(self.url, link_attr);
+
+	@parsed
+	def update_node_references(self):
+		# Getting the source (src) attribute corrected
+		node_list = self.soup.find_all(src=re.compile(''))
+		for node in node_list:
+			link_attr = node.get('src')
+			if not self._is_absolute(link_attr):
+				node.attrs['src'] = urljoin(self.url, link_attr);
+
+		# Getting the hyper-reference (href) attribute corrected
+		node_list = self.soup.find_all(href=re.compile(''))
+		for node in node_list:
+			link_attr = node.get('href')
+			if not self._is_absolute(link_attr):
+				node.attrs['href'] = urljoin(self.url, link_attr);
+
+		self.updated_references = True
 
 	@parsed
 	def cacheNodeReferences(self, node, ref):
@@ -117,6 +139,7 @@ class WebResource(object):
 				r.serialize()
 				link.attrs[ref] = r.filename
 
+	@deprecated
 	@parsed
 	def updateReferences(self):
 		self.updateNodeReferences('a', 'href')
