@@ -1,5 +1,6 @@
 cache/
 *.log
+installed_files.txt
 
 # Temporary files
 .DS_Store
@@ -17,3 +18,4 @@ cache/
 
 # Setup tool generated files/folders.
 /build/
+MANIFEST
