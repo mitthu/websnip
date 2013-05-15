@@ -104,6 +104,8 @@ class WebResource(object):
 					r.serialize()
 					rule.href = r.url
 			def replacer(url):
+				if url.startswith('data'):
+					return url
 				r = WebResource(urljoin(self.url, url), self.base_storage, self.user_agent, self.log)
 				r.serialize()
 				return r.filename
