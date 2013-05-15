@@ -36,6 +36,3 @@ class Log(object):
 	def __init__(self, filename):
 		super(Log, self).__init__()
 		self.filename = filename
-
-# For global logging
-logger = Log("datalog.log")

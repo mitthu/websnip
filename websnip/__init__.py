@@ -11,8 +11,9 @@ from urlparse import urlparse, urljoin
 from os.path import splitext, basename
 import mimetypes
 import codecs
-import log
-from decorators import *
+
+from _log import Log
+from _decorators import *
 
 mimetypes.init()
 links = {}
@@ -50,7 +51,7 @@ class WebResource(object):
 		if not resource_extension:
 			resource_extension = file_ext
 		if not resource_extension:
-			logging.info('Extension could not be guessed for url: %s' % self.url)
+			self.log.info('Extension could not be guessed for url: %s' % self.url)
 			resource_extension = '.none'
 		return filename, resource_extension
 
@@ -61,7 +62,7 @@ class WebResource(object):
 		try:
 			self.soup = BeautifulSoup(self.content, "html5lib")
 		except:
-			logger.exception('Failed to parse: %s' % self.url)
+			log.exception('Failed to parse: %s' % self.url)
 			self.soup = None
 
 	def renderHtml(self):
@@ -121,11 +122,12 @@ class WebResource(object):
 		self.serializeUpdated()
 
 	"""WebResource"""
-	def __init__(self, url, base_storage='cache/html/', user_agent='Mozilla/5.0'):
+	def __init__(self, url, base_storage='cache/html/', user_agent='Mozilla/5.0', log='websnip.log'):
 		super(WebResource, self).__init__()
 		self.url = url
 		self.base_storage = base_storage
 		self.user_agent = user_agent
+		self.log = Log(log)
 
 		# TODOs:
 		# Handle different types URL opening errors like if timeout, then retry.
