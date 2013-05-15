@@ -15,5 +15,5 @@ setup(
 		'beautifulsoup4==4.1.3',
 		'html5lib==0.95',
 		'distribute==0.6.34',
-      ]
+    ]
 )
