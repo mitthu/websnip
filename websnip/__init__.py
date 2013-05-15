@@ -24,6 +24,7 @@ from os.path import splitext, basename
 import mimetypes
 import codecs
 import re
+import hashlib
 
 from _log import Log
 from _decorators import *
@@ -177,12 +178,18 @@ class WebResource(object):
 			self.response = self.url_opener.open(self.url)
 			self.content = self.response.read()
 			self.mime = self.getMime()
+			h = hashlib.md5()
+			h.update(self.content)
+			self.hash = h.hexdigest()
 		except:
 			self.response = None
 			self.content = None
 			self.mime = None
+			self.hash = None
 
 		self.filebase, self.extension = self.getFilenameAndExtension()
+		if self.hash:
+			self.filebase = self.filebase + '-' + self.hash[:8] # First 7 characters of md5()
 		self.filename = self.filebase + self.extension
 
 		self.soup = None
