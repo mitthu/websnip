@@ -26,7 +26,6 @@ from _decorators import *
 
 mimetypes.init()
 links = {}
-links['python'] = 'http://python.org/'
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp'
 links['w3_1'] = 'http://www.w3schools.com/tags/att_script_src.asp'
 links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar'
@@ -34,6 +33,10 @@ links['auto-complete'] = 'http://www2-pcmdi.llnl.gov/cdat/tips_and_tricks/python
 links['doc-urllib'] = 'http://docs.python.org/2/howto/urllib2.html'
 links['buggenie-issue'] = 'http://issues.thebuggenie.com/wiki/TheBugGenie%3AHowTo%3ANginxConfiguration'
 links['python-signal'] = 'http://docs.python.org/2/library/signal.html'
+
+# Error prone
+links['python'] = 'http://python.org/'
+url = links['django-debug']
 
 # TODOs:
 # Make all resources (html, css, scipts,...) unicode except images
@@ -131,7 +134,7 @@ class WebResource(object):
 		self.serializeUpdated()
 
 	"""WebResource"""
-	def __init__(self, url, base_storage='cache/html/', user_agent='Mozilla/5.0', log='websnip.log'):
+	def __init__(self, url, base_storage='cache/', user_agent='Mozilla/5.0', log='websnip.log'):
 		super(WebResource, self).__init__()
 		self.url = url
 		self.base_storage = base_storage
