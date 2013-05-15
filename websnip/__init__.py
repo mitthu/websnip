@@ -49,7 +49,9 @@ class WebResource(object):
 		return resource_mimetype
 
 	def getFilenameAndExtension(self):
-		resource_extension = mimetypes.guess_extension(self.mime)
+		resource_extension = None
+		if self.mime:
+			resource_extension = mimetypes.guess_extension(self.mime)
 		if not resource_extension:
 			guessed_mime = mimetypes.guess_type(self.url)[0]
 			if guessed_mime:
