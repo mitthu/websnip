@@ -2,6 +2,15 @@
 # TODOs:
 # Take care of url opening exceptions.
 # Write test cases.
+# Take care of background images in stylesheets as well as inline styles (like  <a> tags in Wikiepedia Logo).
+# Look if imports are possible in stylesheets/javascript and cache accordingly.
+# Make resources handled as unicode.
+
+# BUGs:
+# Caching w3school pages gives error (@ top),
+# 	<script src="http://www.googletagservices.com/tag/js/gpt.js"></script> 
+# 'https' resources create trouble.
+
 # References:
 # http://stackoverflow.com/questions/10552188/python-split-url-to-find-image-name-and-extension
 
