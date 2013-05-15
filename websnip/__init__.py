@@ -103,32 +103,19 @@ class WebResource(object):
 					r = WebResource(rule.styleSheet.href, self.base_storage, self.user_agent, self.log)
 					r.serialize()
 					rule.href = r.url
-			# def _type_is_stylesheet(s):
-			# 	if type(s) == 'cssutils.css.cssstylesheet.CSSStyleSheet':
-			# 		return True
-			# 	return False
-			# for s in cssutils.getUrls(sheet):
-			# 	if _type_is_stylesheet(s):
-			# 		r = WebResource(s.href, self.base_storage, self.user_agent, self.log)
-			# 		r.serialize()
-			# 		s.href = r.url
-			# 	if type(s) == 'unicode':
-			# 		r = WebResource(s, self.base_storage, self.user_agent, self.log)
-			# 		r.serialize()
 			def replacer(url):
 				r = WebResource(urljoin(self.url, url), self.base_storage, self.user_agent, self.log)
 				r.serialize()
-				return r.url
+				return r.filename
 			cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
 			self.content = unicode(sheet.cssText)
-
 		if self._is_image():
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
 			f.close()
 		else:
 			f = open(self.base_storage + self.filename, "w")
-			f.write(str(self.content))
+			f.write(self.content)
 			f.close()
 
 	@parsed
