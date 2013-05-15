@@ -13,6 +13,8 @@
 # Caching w3school pages gives error (@ top),
 # 	<script src="http://www.googletagservices.com/tag/js/gpt.js"></script> 
 # 'https' resources create trouble.
+# Control the amount of recursion in,
+# - The number of levels the @import rules of css are met
 
 # References:
 # http://stackoverflow.com/questions/10552188/python-split-url-to-find-image-name-and-extension
@@ -25,6 +27,7 @@ import mimetypes
 import codecs
 import re
 import hashlib
+import cssutils
 
 from _log import Log
 from _decorators import *
@@ -89,7 +92,18 @@ class WebResource(object):
 	def renderHtml(self):
 		return unicode(self.soup)
 
+	def contents_as_unicode(self):
+		return unicode(self.content)
+
 	def serialize(self):
+		if self._is_stylesheet():
+			sheet = cssutils.parseString(self.contents_as_unicode(), href=self.url)
+			for rule in sheet.cssRules:
+				if rule.type == rule.IMPORT_RULE:
+					r = WebResource(rule.styleSheet.href, self.base_storage, self.user_agent, self.log)
+					r.serialize()
+					rule.href = r.url
+			self.content = unicode(sheet.cssText)
 		f = open(self.base_storage + self.filename, "w")
 		f.write(self.content)
 		f.close()
@@ -104,6 +118,17 @@ class WebResource(object):
 		if not url:
 			return False
 		return bool(urlparse(url).scheme)
+
+	def _is_stylesheet(self):
+		# If MIME type is none/empty, then ...
+		if not self.mime:
+			return False
+		try:
+			if self.mime.split('/')[1] == 'css':
+				return True
+		except:
+			pass
+		return False
 
 	@deprecated
 	@parsed
