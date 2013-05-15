@@ -136,7 +136,7 @@ class WebResource(object):
 		for link in self.soup.find_all(node):
 			link_attr = link.get(ref)
 			if link_attr:
-				r = WebResource(link_attr, self.base_storage, self.user_agent)
+				r = WebResource(link_attr, self.base_storage, self.user_agent, self.log)
 				r.serialize()
 				link.attrs[ref] = r.filename
 
