@@ -14,3 +14,9 @@ def parsed(f):
 		if instance.soup:
 			return f(*args, **kwargs)
 	return inner
+
+def deprecated(f):
+	def inner(*args, **kwargs):
+		print 'Using deprecated function: %s' % f.__name__
+		return f(*args, **kwargs)
+	return inner
