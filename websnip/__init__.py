@@ -46,7 +46,7 @@ links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar' # Se
 links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-python-packaging-a-k-a-setup-scripts/' # CSS background image
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
 
-url = links['django-debug']
+url = links['foobar']
 
 # TODOs:
 # Make all resources (html, css, scipts,...) unicode except images
@@ -103,10 +103,33 @@ class WebResource(object):
 					r = WebResource(rule.styleSheet.href, self.base_storage, self.user_agent, self.log)
 					r.serialize()
 					rule.href = r.url
+			# def _type_is_stylesheet(s):
+			# 	if type(s) == 'cssutils.css.cssstylesheet.CSSStyleSheet':
+			# 		return True
+			# 	return False
+			# for s in cssutils.getUrls(sheet):
+			# 	if _type_is_stylesheet(s):
+			# 		r = WebResource(s.href, self.base_storage, self.user_agent, self.log)
+			# 		r.serialize()
+			# 		s.href = r.url
+			# 	if type(s) == 'unicode':
+			# 		r = WebResource(s, self.base_storage, self.user_agent, self.log)
+			# 		r.serialize()
+			def replacer(url):
+				r = WebResource(urljoin(self.url, url), self.base_storage, self.user_agent, self.log)
+				r.serialize()
+				return r.url
+			cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
 			self.content = unicode(sheet.cssText)
-		f = open(self.base_storage + self.filename, "w")
-		f.write(self.content)
-		f.close()
+
+		if self._is_image():
+			f = open(self.base_storage + self.filename, "wb")
+			f.write(self.content)
+			f.close()
+		else:
+			f = open(self.base_storage + self.filename, "w")
+			f.write(str(self.content))
+			f.close()
 
 	@parsed
 	def serializeUpdated(self):
@@ -125,6 +148,17 @@ class WebResource(object):
 			return False
 		try:
 			if self.mime.split('/')[1] == 'css':
+				return True
+		except:
+			pass
+		return False
+
+	def _is_image(self):
+		# If MIME type is none/empty, then ...
+		if not self.mime:
+			return False
+		try:
+			if self.mime.split('/')[0] == 'image':
 				return True
 		except:
 			pass
