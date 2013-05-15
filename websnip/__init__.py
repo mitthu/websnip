@@ -1,10 +1,12 @@
 # Started on 8-May-2013, 9:00 PM, by mitthu
 # TODOs:
-# Take care of url opening exceptions.
-# Write test cases.
-# Take care of background images in stylesheets as well as inline styles (like  <a> tags in Wikiepedia Logo).
-# Look if imports are possible in stylesheets/javascript and cache accordingly.
-# Make resources handled as unicode.
+# - Take care of url opening exceptions.
+# - Write test cases.
+# - Take care of background images in stylesheets as well as inline styles (like  <a> tags in Wikiepedia Logo).
+# - Look if imports are possible in stylesheets/javascript and cache accordingly.
+# - Make resources handled as unicode.
+# - Write images as binary files.
+# - Use python logging feature.
 
 # BUGs:
 # Caching w3school pages gives error (@ top),
@@ -28,7 +30,6 @@ mimetypes.init()
 links = {}
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp'
 links['w3_1'] = 'http://www.w3schools.com/tags/att_script_src.asp'
-links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar'
 links['auto-complete'] = 'http://www2-pcmdi.llnl.gov/cdat/tips_and_tricks/python_tips/autocompletion.html'
 links['doc-urllib'] = 'http://docs.python.org/2/howto/urllib2.html'
 links['buggenie-issue'] = 'http://issues.thebuggenie.com/wiki/TheBugGenie%3AHowTo%3ANginxConfiguration'
@@ -36,6 +37,8 @@ links['python-signal'] = 'http://docs.python.org/2/library/signal.html'
 
 # Error prone
 links['python'] = 'http://python.org/'
+links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar'
+
 url = links['django-debug']
 
 # TODOs:
