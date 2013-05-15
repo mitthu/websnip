@@ -97,7 +97,7 @@ class WebResource(object):
 
 	def serialize(self):
 		if self._is_stylesheet():
-			sheet = cssutils.parseString(self.contents_as_unicode(), href=self.url)
+			sheet = cssutils.parseString(self.content, href=self.url)
 			for rule in sheet.cssRules:
 				if rule.type == rule.IMPORT_RULE:
 					r = WebResource(rule.styleSheet.href, self.base_storage, self.user_agent, self.log)
@@ -110,7 +110,7 @@ class WebResource(object):
 				r.serialize()
 				return r.filename
 			cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
-			self.content = unicode(sheet.cssText)
+			self.content = sheet.cssText
 		if self._is_image():
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
