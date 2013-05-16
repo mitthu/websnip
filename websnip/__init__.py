@@ -41,6 +41,8 @@ links['auto-complete'] = 'http://www2-pcmdi.llnl.gov/cdat/tips_and_tricks/python
 links['doc-urllib'] = 'http://docs.python.org/2/howto/urllib2.html'
 links['buggenie-issue'] = 'http://issues.thebuggenie.com/wiki/TheBugGenie%3AHowTo%3ANginxConfiguration'
 links['python-signal'] = 'http://docs.python.org/2/library/signal.html'
+links['wiki.home'] = 'http://en.wikipedia.org/wiki/Main_Page'
+links['google-search'] = 'https://www.google.com/search?q=cssutils+inline+css&aq=f&oq=cssutils+inline+css&aqs=chrome.0.57j62l3.10411j0&sourceid=chrome&ie=UTF-8'
 
 # Error prone
 links['python'] = 'http://python.org/' # No styles come up, @import style directive
@@ -48,8 +50,9 @@ links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar' # Se
 links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-python-packaging-a-k-a-setup-scripts/' # CSS background image
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
 links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%80_%D0%BF%D0%BE%D1%80%D1%8F%D0%B4%D0%BA%D1%83_%D0%B1%D0%B0%D0%B9%D1%82%D1%96%D0%B2'
+links['wiki.microsoft'] = 'http://en.wikipedia.org/wiki/Microsoft_Windows' # Complete disaster
 
-url = links['python']
+url = links['wiki.home']
 
 def _to_unicode(s):
 	if s is None:
@@ -141,20 +144,31 @@ class WebResource(object):
 	def contents_as_unicode(self):
 		return _to_unicode(self.content)
 
-	def serialize(self):
-		if self._is_stylesheet():
-			sheet = cssutils.parseString(self.content, href=self.url)
+	"""
+	Caches all required URI's and Imports.
+	Returns,
+	- updated css content
+	"""
+	def cache_style_content(self, content, inline=False):
+		if inline:
+			sheet = cssutils.parseStyle(content)
+		else:
+			sheet = cssutils.parseString(content, href=self.url)
+		if not inline:
 			for rule in sheet.cssRules:
 				if rule.type == rule.IMPORT_RULE:
 					f = self._recursive_cache_resource(rule.styleSheet.href)
 					rule.href = f
-			def replacer(url):
-				if url.startswith('data'):
-					return url
-				return self._recursive_cache_resource(urljoin(self.url, url))
-			cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
-			self.content = sheet.cssText
+		def replacer(url):
+			if url.startswith('data'):
+				return url
+			# TODOs:
+			# Check for absolute url before joining
+			return self._recursive_cache_resource(urljoin(self.url, url))
+		cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
+		return sheet.cssText
 
+	def serialize(self):
 		if self._is_image():
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
@@ -191,18 +205,32 @@ class WebResource(object):
 	@parsed
 	@updated_references
 	def cache_resources(self):
-		link_tags = self.soup.find_all('link', rel=re.compile('stylesheet|icon'))
-		for link in link_tags:
+		# Updaing the link tag
+		for link in self.soup.find_all('link', rel=re.compile('stylesheet|icon')):
 			f = self._recursive_cache_resource(link.get('href'))
 			if f is not None:
 				link.attrs['href'] = f
+		# Updating the src tag
 		for tag in self.soup.find_all(src=re.compile('')):
 			f = self._recursive_cache_resource(tag.get('src'))
 			if f is not None:
 				tag.attrs['src'] = f
+		# Looking over the style attribute
+		for tag in self.soup.find_all(style=re.compile('')):
+			print 'Original CSS: %s' % tag.get('style')
+			css = self.cache_style_content(tag.get('style'), inline=True)
+			print 'Modified inline css: %s' % css
+			if css is not None:
+				tag.attrs['style'] = css
+		# The <style> tag
+		for link in self.soup.find_all('style'):
+			css = self.cache_style_content(link.text)
+			if css is not None:
+				link.string = css
 
 	def cache(self):
-		# self.cacheReferencedResources()
+		if self._is_stylesheet():
+			self.content = self.cache_style_content(self.content)
 		self.cache_resources()
 		self.filename = 'index.html'
 		self.serializeUpdated()
