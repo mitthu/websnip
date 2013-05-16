@@ -117,10 +117,10 @@ class WebResource(object):
 			self.soup = None
 
 	def renderHtml(self):
-		return unicode(self.soup)
+		return unicode(self.soup, 'utf-8-sig')
 
 	def contents_as_unicode(self):
-		return unicode(self.content)
+		return unicode(self.content, 'utf-8-sig')
 
 	def serialize(self):
 		if self._is_stylesheet():
@@ -145,13 +145,13 @@ class WebResource(object):
 			f.close()
 		else:
 			f = codecs.open(self.base_storage + self.filename, "w", "utf-8-sig")
-			f.write(unicode(self.content))
+			f.write(unicode(self.content, 'utf-8-sig'))
 			f.close()
 
 	@parsed
 	def serializeUpdated(self):
 		f = codecs.open(self.base_storage + self.filename, "w", "utf-8-sig")
-		f.write(unicode(self.soup))
+		f.write(unicode(self.soup, 'utf-8-sig'))
 		f.close()
 
 	@parsed
