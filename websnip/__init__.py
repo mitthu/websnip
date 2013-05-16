@@ -52,6 +52,7 @@ links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-p
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
 links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%80_%D0%BF%D0%BE%D1%80%D1%8F%D0%B4%D0%BA%D1%83_%D0%B1%D0%B0%D0%B9%D1%82%D1%96%D0%B2'
 links['wiki.microsoft'] = 'http://en.wikipedia.org/wiki/Microsoft_Windows' # Complete disaster
+links['shravan'] = 'http://theshravan.net/bundling-and-minification-support-in-asp-net-mvc-4/' # The smiley at the bottom of the page does not show up
 
 url = links['stackoverflow']
 
