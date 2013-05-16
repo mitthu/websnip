@@ -8,6 +8,8 @@
 # - Write images as binary files.
 # - Use python logging feature.
 # - Take care or links starting with '#'
+# - Cache only those <link>'s, which have rel='stylesheet' and 'icon'
+# - Parse styles in <style> tag as well as inline styles of various tags.
 
 # BUGs:
 # Caching w3school pages gives error (@ top),
@@ -45,8 +47,14 @@ links['python'] = 'http://python.org/' # No styles come up, @import style direct
 links['django-debug'] = 'https://github.com/robhudson/django-debug-toolbar' # Serialize problem
 links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-python-packaging-a-k-a-setup-scripts/' # CSS background image
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
+links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%80_%D0%BF%D0%BE%D1%80%D1%8F%D0%B4%D0%BA%D1%83_%D0%B1%D0%B0%D0%B9%D1%82%D1%96%D0%B2'
 
-url = links['foobar']
+url = links['wiki.lang.uk']
+
+def _to_unicode(s):
+	if s is None:
+		return u''
+	return unicode(s, 'utf-8-sig')
 
 # TODOs:
 # Make all resources (html, css, scipts,...) unicode except images
@@ -116,11 +124,11 @@ class WebResource(object):
 			log.exception('Failed to parse: %s' % self.url)
 			self.soup = None
 
-	def renderHtml(self):
-		return unicode(self.soup, 'utf-8-sig')
+	def render_updated_html(self):
+		return _to_unicode(self.soup.encode_contents())
 
 	def contents_as_unicode(self):
-		return unicode(self.content, 'utf-8-sig')
+		return _to_unicode(self.content)
 
 	def serialize(self):
 		if self._is_stylesheet():
@@ -145,13 +153,13 @@ class WebResource(object):
 			f.close()
 		else:
 			f = codecs.open(self.base_storage + self.filename, "w", "utf-8-sig")
-			f.write(unicode(self.content, 'utf-8-sig'))
+			f.write(_to_unicode(self.content))
 			f.close()
 
 	@parsed
 	def serializeUpdated(self):
 		f = codecs.open(self.base_storage + self.filename, "w", "utf-8-sig")
-		f.write(unicode(self.soup, 'utf-8-sig'))
+		f.write(_to_unicode(self.soup.encode_contents()))
 		f.close()
 
 	@parsed
