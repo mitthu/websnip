@@ -5,11 +5,11 @@
 # - Take care of background images in stylesheets as well as inline styles (like  <a> tags in Wikiepedia Logo).
 # - Look if imports are possible in stylesheets/javascript and cache accordingly.
 # - Make resources handled as unicode.
-# - Write images as binary files.
 # - Use python logging feature.
 # - Take care or links starting with '#'
-# - Cache only those <link>'s, which have rel='stylesheet' and 'icon'
-# - Parse styles in <style> tag as well as inline styles of various tags.
+# - Add support to save only filename hashes instead of readble format.
+# - Handle file:/// format URL's and it's brothers.
+# - Use urllib3 for improved performance.
 
 # BUGs:
 # Caching w3school pages gives error (@ top),
@@ -43,6 +43,7 @@ links['buggenie-issue'] = 'http://issues.thebuggenie.com/wiki/TheBugGenie%3AHowT
 links['python-signal'] = 'http://docs.python.org/2/library/signal.html'
 links['wiki.home'] = 'http://en.wikipedia.org/wiki/Main_Page'
 links['google-search'] = 'https://www.google.com/search?q=cssutils+inline+css&aq=f&oq=cssutils+inline+css&aqs=chrome.0.57j62l3.10411j0&sourceid=chrome&ie=UTF-8'
+links['stackoverflow'] = 'http://stackoverflow.com/questions/2073541/search-and-replace-in-html-with-beautifulsoup'
 
 # Error prone
 links['python'] = 'http://python.org/' # No styles come up, @import style directive
@@ -51,7 +52,6 @@ links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-p
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
 links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%80_%D0%BF%D0%BE%D1%80%D1%8F%D0%B4%D0%BA%D1%83_%D0%B1%D0%B0%D0%B9%D1%82%D1%96%D0%B2'
 links['wiki.microsoft'] = 'http://en.wikipedia.org/wiki/Microsoft_Windows' # Complete disaster
-links['stackoverflow'] = 'http://stackoverflow.com/questions/2073541/search-and-replace-in-html-with-beautifulsoup'
 
 url = links['stackoverflow']
 
