@@ -49,7 +49,7 @@ links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-p
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
 links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%80_%D0%BF%D0%BE%D1%80%D1%8F%D0%B4%D0%BA%D1%83_%D0%B1%D0%B0%D0%B9%D1%82%D1%96%D0%B2'
 
-url = links['wiki.lang.uk']
+url = links['python']
 
 def _to_unicode(s):
 	if s is None:
@@ -85,6 +85,17 @@ class WebResource(object):
 		except:
 			pass
 		return False
+
+	"""
+	Returns:
+	filename => the filename of the cached resource
+	"""
+	def _recursive_cache_resource(self, url):
+		if url is None:
+			return None
+		r = WebResource(url, self.base_storage, self.user_agent, self.log)
+		r.serialize()
+		return r.filename
 
 	def getMime(self):
 		resource_mimetype = self.response.info()['Content-Type']
@@ -181,6 +192,21 @@ class WebResource(object):
 		self.updated_references = True
 
 	@parsed
+	@updated_references
+	def cache_resources(self):
+		link_tags = self.soup.find_all('link', rel=re.compile('stylesheet|icon'))
+		for link in link_tags:
+			f = self._recursive_cache_resource(link.get('href'))
+			if f is not None:
+				link.attrs['href'] = f
+		for tag in self.soup.find_all(src=re.compile('')):
+			f = self._recursive_cache_resource(tag.get('src'))
+			if f is not None:
+				tag.attrs['src'] = f
+
+	@deprecated
+	@parsed
+	@updated_references
 	def cacheNodeReferences(self, node, ref):
 		for link in self.soup.find_all(node):
 			link_attr = link.get(ref)
@@ -189,6 +215,7 @@ class WebResource(object):
 				r.serialize()
 				link.attrs[ref] = r.filename
 
+	@deprecated
 	@parsed
 	@updated_references
 	def cacheReferencedResources(self):
@@ -197,7 +224,8 @@ class WebResource(object):
 		self.cacheNodeReferences('script', 'src')
 
 	def cache(self):
-		self.cacheReferencedResources()
+		# self.cacheReferencedResources()
+		self.cache_resources()
 		self.filename = 'index.html'
 		self.serializeUpdated()
 
