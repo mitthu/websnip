@@ -51,6 +51,33 @@ url = links['foobar']
 # TODOs:
 # Make all resources (html, css, scipts,...) unicode except images
 class WebResource(object):
+	def _is_absolute(self, url):
+		if not url:
+			return False
+		return bool(urlparse(url).scheme)
+
+	def _is_stylesheet(self):
+		# If MIME type is none/empty, then ...
+		if not self.mime:
+			return False
+		try:
+			if self.mime.split('/')[1] == 'css':
+				return True
+		except:
+			pass
+		return False
+
+	def _is_image(self):
+		# If MIME type is none/empty, then ...
+		if not self.mime:
+			return False
+		try:
+			if self.mime.split('/')[0] == 'image':
+				return True
+		except:
+			pass
+		return False
+
 	def getMime(self):
 		resource_mimetype = self.response.info()['Content-Type']
 		# Taking care of content type with encoding,
@@ -111,6 +138,7 @@ class WebResource(object):
 				return r.filename
 			cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
 			self.content = sheet.cssText
+		
 		if self._is_image():
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
@@ -125,41 +153,6 @@ class WebResource(object):
 		f = codecs.open(self.base_storage + self.filename, "w", "utf-8-sig")
 		f.write(unicode(self.soup))
 		f.close()
-
-	def _is_absolute(self, url):
-		if not url:
-			return False
-		return bool(urlparse(url).scheme)
-
-	def _is_stylesheet(self):
-		# If MIME type is none/empty, then ...
-		if not self.mime:
-			return False
-		try:
-			if self.mime.split('/')[1] == 'css':
-				return True
-		except:
-			pass
-		return False
-
-	def _is_image(self):
-		# If MIME type is none/empty, then ...
-		if not self.mime:
-			return False
-		try:
-			if self.mime.split('/')[0] == 'image':
-				return True
-		except:
-			pass
-		return False
-
-	@deprecated
-	@parsed
-	def updateNodeReferences(self, node, ref):
-		for link in self.soup.find_all(node):
-			link_attr = link.get(ref)
-			if not self._is_absolute(link_attr):
-				link.attrs[ref] = urljoin(self.url, link_attr);
 
 	@parsed
 	def update_node_references(self):
@@ -187,16 +180,6 @@ class WebResource(object):
 				r = WebResource(link_attr, self.base_storage, self.user_agent, self.log)
 				r.serialize()
 				link.attrs[ref] = r.filename
-
-	@deprecated
-	@parsed
-	def updateReferences(self):
-		self.updateNodeReferences('a', 'href')
-		self.updateNodeReferences('a', 'src')
-		self.updateNodeReferences('link', 'href')
-		self.updateNodeReferences('img', 'src')
-		self.updateNodeReferences('script', 'src')
-		self.updated_references = True
 
 	@parsed
 	@updated_references
@@ -242,3 +225,21 @@ class WebResource(object):
 
 		self.soup = None
 		self.updated_references = False
+
+	@deprecated
+	@parsed
+	def updateNodeReferences(self, node, ref):
+		for link in self.soup.find_all(node):
+			link_attr = link.get(ref)
+			if not self._is_absolute(link_attr):
+				link.attrs[ref] = urljoin(self.url, link_attr);
+
+	@deprecated
+	@parsed
+	def updateReferences(self):
+		self.updateNodeReferences('a', 'href')
+		self.updateNodeReferences('a', 'src')
+		self.updateNodeReferences('link', 'href')
+		self.updateNodeReferences('img', 'src')
+		self.updateNodeReferences('script', 'src')
+		self.updated_references = True
