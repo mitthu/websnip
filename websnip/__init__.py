@@ -138,14 +138,14 @@ class WebResource(object):
 				return r.filename
 			cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
 			self.content = sheet.cssText
-		
+
 		if self._is_image():
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
 			f.close()
 		else:
-			f = open(self.base_storage + self.filename, "w")
-			f.write(self.content)
+			f = codecs.open(self.base_storage + self.filename, "w", "utf-8-sig")
+			f.write(unicode(self.content))
 			f.close()
 
 	@parsed
