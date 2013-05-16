@@ -146,15 +146,12 @@ class WebResource(object):
 			sheet = cssutils.parseString(self.content, href=self.url)
 			for rule in sheet.cssRules:
 				if rule.type == rule.IMPORT_RULE:
-					r = WebResource(rule.styleSheet.href, self.base_storage, self.user_agent, self.log)
-					r.serialize()
-					rule.href = r.url
+					f = self._recursive_cache_resource(rule.styleSheet.href)
+					rule.href = f
 			def replacer(url):
 				if url.startswith('data'):
 					return url
-				r = WebResource(urljoin(self.url, url), self.base_storage, self.user_agent, self.log)
-				r.serialize()
-				return r.filename
+				return self._recursive_cache_resource(urljoin(self.url, url))
 			cssutils.replaceUrls(sheet, replacer, ignoreImportRules=True)
 			self.content = sheet.cssText
 
@@ -203,25 +200,6 @@ class WebResource(object):
 			f = self._recursive_cache_resource(tag.get('src'))
 			if f is not None:
 				tag.attrs['src'] = f
-
-	@deprecated
-	@parsed
-	@updated_references
-	def cacheNodeReferences(self, node, ref):
-		for link in self.soup.find_all(node):
-			link_attr = link.get(ref)
-			if link_attr:
-				r = WebResource(link_attr, self.base_storage, self.user_agent, self.log)
-				r.serialize()
-				link.attrs[ref] = r.filename
-
-	@deprecated
-	@parsed
-	@updated_references
-	def cacheReferencedResources(self):
-		self.cacheNodeReferences('link', 'href')
-		self.cacheNodeReferences('img', 'src')
-		self.cacheNodeReferences('script', 'src')
 
 	def cache(self):
 		# self.cacheReferencedResources()
@@ -279,3 +257,22 @@ class WebResource(object):
 		self.updateNodeReferences('img', 'src')
 		self.updateNodeReferences('script', 'src')
 		self.updated_references = True
+
+	@deprecated
+	@parsed
+	@updated_references
+	def cacheNodeReferences(self, node, ref):
+		for link in self.soup.find_all(node):
+			link_attr = link.get(ref)
+			if link_attr:
+				r = WebResource(link_attr, self.base_storage, self.user_agent, self.log)
+				r.serialize()
+				link.attrs[ref] = r.filename
+
+	@deprecated
+	@parsed
+	@updated_references
+	def cacheReferencedResources(self):
+		self.cacheNodeReferences('link', 'href')
+		self.cacheNodeReferences('img', 'src')
+		self.cacheNodeReferences('script', 'src')
