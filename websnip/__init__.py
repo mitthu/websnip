@@ -51,8 +51,9 @@ links['foobar'] = 'http://foobar.lu/wp/2012/05/13/a-comprehensive-step-through-p
 links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag comes at the top
 links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%80_%D0%BF%D0%BE%D1%80%D1%8F%D0%B4%D0%BA%D1%83_%D0%B1%D0%B0%D0%B9%D1%82%D1%96%D0%B2'
 links['wiki.microsoft'] = 'http://en.wikipedia.org/wiki/Microsoft_Windows' # Complete disaster
+links['stackoverflow'] = 'http://stackoverflow.com/questions/2073541/search-and-replace-in-html-with-beautifulsoup'
 
-url = links['wiki.home']
+url = links['stackoverflow']
 
 def _to_unicode(s):
 	if s is None:
@@ -169,6 +170,8 @@ class WebResource(object):
 		return sheet.cssText
 
 	def serialize(self):
+		if self._is_stylesheet():
+			self.content = self.cache_style_content(self.content)
 		if self._is_image():
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
@@ -217,9 +220,7 @@ class WebResource(object):
 				tag.attrs['src'] = f
 		# Looking over the style attribute
 		for tag in self.soup.find_all(style=re.compile('')):
-			print 'Original CSS: %s' % tag.get('style')
 			css = self.cache_style_content(tag.get('style'), inline=True)
-			print 'Modified inline css: %s' % css
 			if css is not None:
 				tag.attrs['style'] = css
 		# The <style> tag
@@ -229,8 +230,6 @@ class WebResource(object):
 				link.string = css
 
 	def cache(self):
-		if self._is_stylesheet():
-			self.content = self.cache_style_content(self.content)
 		self.cache_resources()
 		self.filename = 'index.html'
 		self.serializeUpdated()
