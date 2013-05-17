@@ -77,21 +77,16 @@ class WebResource(object):
 
 	@valid_mime
 	def _is_stylesheet(self):
-		if self._mime_minor() == 'css':
-			return True
-		return False
+		return 	self.mime_match('text', 'css') or \
+				self.mime_match('application', 'x-pointplus')
 
 	@valid_mime
 	def _is_image(self):
-		if self._mime_major() == 'image':
-			return True
-		return False
+		return self.mime_match(major='image')
 
 	@valid_mime
 	def _is_generic_mime(self):
-		if self.mime == 'text/plain':
-			return True
-		return False
+		return self.mime_match('text', 'plain')
 
 	@valid_mime
 	def _mime_major(self):
@@ -106,6 +101,21 @@ class WebResource(object):
 			return self.mime.split('/')[1]
 		except:
 			return None
+
+	@valid_mime
+	def mime_match(self, major=None, minor=None):
+		if major is not None and minor is not None:
+			if self.mime_major == major and self.mime_minor == minor:
+				return True
+		elif major is not None and minor is None:
+			if self.mime_major == major:
+				return True
+		elif major is None and minor is not None:
+			if self.mime_minor == minor:
+				return True
+		else:
+			return False
+		return False
 
 	def _recursive_cache_resource(self, url):
 		"""Returns:
@@ -274,6 +284,10 @@ class WebResource(object):
 			self.content = None
 			self.mime = None
 			self.hash = None
+
+		# Updating mime types
+		self.mime_major = self._mime_major()
+		self.mime_minor = self._mime_minor()
 
 		self.filebase, self.extension = self.getFilenameAndExtension()
 		if self.hash:
