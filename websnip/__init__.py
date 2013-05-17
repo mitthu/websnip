@@ -56,6 +56,7 @@ links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D
 links['wiki.microsoft'] = 'http://en.wikipedia.org/wiki/Microsoft_Windows' # Complete disaster
 links['shravan'] = 'http://theshravan.net/bundling-and-minification-support-in-asp-net-mvc-4/' # The smiley at the bottom of the page does not show up
 links['require.js'] = 'http://requirejs.org/' # Fails due to utf-8 error. UnicodeDecodeError: 'utf8' codec can't decode byte 0x80 in position 7: invalid start byte.
+links['wiki.binary'] = 'http://en.wikipedia.org/wiki/National_anthem' # .ogx file shows unicode error
 
 url = links['require.js']
 
@@ -76,6 +77,10 @@ class WebResource(object):
 		return bool(urlparse(url).scheme)
 
 	@valid_mime
+	def _is_html(self):
+		return self.mime_match('text', 'html')
+
+	@valid_mime
 	def _is_stylesheet(self):
 		return 	self.mime_match('text', 'css') or \
 				self.mime_match('application', 'x-pointplus')
@@ -83,6 +88,14 @@ class WebResource(object):
 	@valid_mime
 	def _is_image(self):
 		return self.mime_match(major='image')
+
+	@valid_mime
+	def _is_font(self):
+		filename, extension = self._get_parsed_filename_extension()
+		return self.mime_match('application', 'vnd.ms-fontobject') or \
+				extension == '.otf' or \
+				extension == '.ttf' or \
+				extension == '.eot'
 
 	@valid_mime
 	def _is_generic_mime(self):
@@ -127,6 +140,10 @@ class WebResource(object):
 		r.serialize()
 		return r.filename
 
+	def _get_parsed_filename_extension(self):
+		url_parsed = urlparse(self.url)
+		return splitext(basename(url_parsed.path))
+
 	def getMime(self):
 		resource_mimetype = self.response.info()['Content-Type']
 		# Taking care of content type with encoding,
@@ -148,7 +165,7 @@ class WebResource(object):
 		# as windows path separator is '\'.
 		url_parsed = urlparse(self.url)
 		filename, file_ext = splitext(basename(url_parsed.path))
-		if not resource_extension:
+		if not resource_extension or self.mime_match('text', 'plain'):
 			resource_extension = file_ext
 		if not resource_extension:
 			self.log.info('Extension could not be guessed for url: %s' % self.url)
@@ -198,11 +215,17 @@ class WebResource(object):
 	def serialize(self):
 		if self._is_stylesheet():
 			self.content = self.cache_style_content(self.content)
-		if self._is_image() or self._is_generic_mime():
+		if 	self._is_image() or \
+			self._is_font() or \
+			self.mime_match(major='video') or \
+			self.mime_match(major='audio') or self.mime_match(major='music') or \
+			self.mime_match('application', 'octet-stream'):
+			# Save as binary
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
 			f.close()
 		else:
+			# Save as plain text
 			f = codecs.open(self.base_storage + self.filename, "w", "utf-8-sig")
 			f.write(_to_unicode(self.content))
 			f.close()
