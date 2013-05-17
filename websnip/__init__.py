@@ -11,12 +11,16 @@
 # - Handle file:/// format URL's and it's brothers.
 # - Use urllib3 for improved performance.
 
+# Tests:
+# - Check decorator @valid_mime
+
 # BUGs:
 # Caching w3school pages gives error (@ top),
 # 	<script src="http://www.googletagservices.com/tag/js/gpt.js"></script> 
 # 'https' resources create trouble.
 # Control the amount of recursion in,
 # - The number of levels the @import rules of css are met
+# - Handle font imports
 
 # References:
 # http://stackoverflow.com/questions/10552188/python-split-url-to-find-image-name-and-extension
@@ -53,13 +57,17 @@ links['w3'] = 'http://www.w3schools.com/tags/tag_link.asp' # The <script> tag co
 links['wiki.lang.uk'] = 'http://uk.wikipedia.org/wiki/%D0%9C%D0%B0%D1%80%D0%BA%D0%B5%D1%80_%D0%BF%D0%BE%D1%80%D1%8F%D0%B4%D0%BA%D1%83_%D0%B1%D0%B0%D0%B9%D1%82%D1%96%D0%B2'
 links['wiki.microsoft'] = 'http://en.wikipedia.org/wiki/Microsoft_Windows' # Complete disaster
 links['shravan'] = 'http://theshravan.net/bundling-and-minification-support-in-asp-net-mvc-4/' # The smiley at the bottom of the page does not show up
+links['require.js'] = 'http://requirejs.org/' # Fails due to utf-8 error. UnicodeDecodeError: 'utf8' codec can't decode byte 0x80 in position 7: invalid start byte.
 
-url = links['stackoverflow']
+url = links['require.js']
 
 def _to_unicode(s):
 	if s is None:
 		return u''
-	return unicode(s, 'utf-8-sig')
+	try:
+		return unicode(s, 'utf-8-sig')
+	except:
+		return str(s)
 
 # TODOs:
 # Make all resources (html, css, scipts,...) unicode except images
@@ -69,10 +77,8 @@ class WebResource(object):
 			return False
 		return bool(urlparse(url).scheme)
 
+	@valid_mime
 	def _is_stylesheet(self):
-		# If MIME type is none/empty, then ...
-		if not self.mime:
-			return False
 		try:
 			if self.mime.split('/')[1] == 'css':
 				return True
@@ -80,15 +86,19 @@ class WebResource(object):
 			pass
 		return False
 
+	@valid_mime
 	def _is_image(self):
-		# If MIME type is none/empty, then ...
-		if not self.mime:
-			return False
 		try:
 			if self.mime.split('/')[0] == 'image':
 				return True
 		except:
 			pass
+		return False
+
+	@valid_mime
+	def _is_generic_mime(self):
+		if self.mime == 'text/plain':
+			return True
 		return False
 
 	"""
@@ -173,7 +183,7 @@ class WebResource(object):
 	def serialize(self):
 		if self._is_stylesheet():
 			self.content = self.cache_style_content(self.content)
-		if self._is_image():
+		if self._is_image() or self._is_generic_mime():
 			f = open(self.base_storage + self.filename, "wb")
 			f.write(self.content)
 			f.close()

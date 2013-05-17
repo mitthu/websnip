@@ -1,3 +1,12 @@
+def valid_mime(f):
+	def inner(*args, **kwargs):
+		instance = args[0]
+		# If MIME type is none/empty, then ...
+		if not instance.mime:
+			return None
+		return f(*args, **kwargs)
+	return inner
+
 def updated_references(f):
 	def inner(*args, **kwargs):
 		instance = args[0]
