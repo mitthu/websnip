@@ -7,7 +7,6 @@
 # - Make resources handled as unicode.
 # - Use python logging feature.
 # - Take care or links starting with '#'
-# - Add support to save only filename hashes instead of readble format.
 # - Handle file:/// format URL's and it's brothers.
 # - Use urllib3 for improved performance.
 
@@ -78,20 +77,14 @@ class WebResource(object):
 
 	@valid_mime
 	def _is_stylesheet(self):
-		try:
-			if self.mime.split('/')[1] == 'css':
-				return True
-		except:
-			pass
+		if self._mime_minor() == 'css':
+			return True
 		return False
 
 	@valid_mime
 	def _is_image(self):
-		try:
-			if self.mime.split('/')[0] == 'image':
-				return True
-		except:
-			pass
+		if self._mime_major() == 'image':
+			return True
 		return False
 
 	@valid_mime
@@ -104,7 +97,8 @@ class WebResource(object):
 	def _mime_major(self):
 		try:
 			return self.mime.split('/')[0]
-		return None
+		except:
+			return None
 
 	@valid_mime
 	def _mime_minor(self):
@@ -119,7 +113,7 @@ class WebResource(object):
 		"""
 		if url is None:
 			return None
-		r = WebResource(url, self.base_storage, self.user_agent, self.log)
+		r = WebResource(url, self.base_storage, self.readable, self.user_agent, self.log)
 		r.serialize()
 		return r.filename
 
@@ -256,9 +250,10 @@ class WebResource(object):
 		self.filename = 'index.html'
 		self.serializeUpdated()
 
-	def __init__(self, url, base_storage='cache/', user_agent='Mozilla/5.0', log='websnip.log'):
+	def __init__(self, url, base_storage='cache/', readable=False, user_agent='Mozilla/5.0', log='websnip.log'):
 		super(WebResource, self).__init__()
 		self.url = url
+		self.readable = readable
 		self.base_storage = base_storage
 		self.user_agent = user_agent
 		self.log = Log(log)
@@ -282,7 +277,10 @@ class WebResource(object):
 
 		self.filebase, self.extension = self.getFilenameAndExtension()
 		if self.hash:
-			self.filebase = self.filebase + '-' + self.hash[:8] # First 7 characters of md5 hash
+			if self.readable:
+				self.filebase = self.filebase + '-' + self.hash[:8] # First 7 characters of md5 hash
+			else:
+				self.filebase = self.hash
 		self.filename = self.filebase + self.extension
 
 		self.soup = None
