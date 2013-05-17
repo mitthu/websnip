@@ -101,11 +101,18 @@ class WebResource(object):
 			return True
 		return False
 
-	"""
-	Returns:
-	filename => the filename of the cached resource
-	"""
+	@valid_mime
+	def _mime_major(self):
+		return self.mime.split('/')[0]
+
+	@valid_mime
+	def _mime_minor(self):
+		return self.mime.split('/')[1]
+
 	def _recursive_cache_resource(self, url):
+		"""Returns:
+		filename => the filename of the cached resource
+		"""
 		if url is None:
 			return None
 		r = WebResource(url, self.base_storage, self.user_agent, self.log)
@@ -156,12 +163,12 @@ class WebResource(object):
 	def contents_as_unicode(self):
 		return _to_unicode(self.content)
 
-	"""
-	Caches all required URI's and Imports.
-	Returns,
-	- updated css content
-	"""
 	def cache_style_content(self, content, inline=False):
+		"""
+		Caches all required URI's and Imports.
+		Returns,
+		- updated css content
+		"""
 		if inline:
 			sheet = cssutils.parseStyle(content)
 		else:
@@ -245,7 +252,6 @@ class WebResource(object):
 		self.filename = 'index.html'
 		self.serializeUpdated()
 
-	"""WebResource"""
 	def __init__(self, url, base_storage='cache/', user_agent='Mozilla/5.0', log='websnip.log'):
 		super(WebResource, self).__init__()
 		self.url = url
