@@ -12,7 +12,6 @@
 # - Use urllib3 for improved performance.
 
 # Tests:
-# - Check decorator @valid_mime
 
 # BUGs:
 # Caching w3school pages gives error (@ top),
