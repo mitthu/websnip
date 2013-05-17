@@ -103,11 +103,16 @@ class WebResource(object):
 
 	@valid_mime
 	def _mime_major(self):
-		return self.mime.split('/')[0]
+		try:
+			return self.mime.split('/')[0]
+		return None
 
 	@valid_mime
 	def _mime_minor(self):
-		return self.mime.split('/')[1]
+		try:
+			return self.mime.split('/')[1]
+		except:
+			return None
 
 	def _recursive_cache_resource(self, url):
 		"""Returns:
